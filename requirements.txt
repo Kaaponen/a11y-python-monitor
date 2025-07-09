@@ -1,0 +1,7 @@
+playwright
+requests
+aiohttp
+aiofiles
+beautifulsoup4
+lxml
+streamlit
