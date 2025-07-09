@@ -56,25 +56,15 @@ htmlcov/
 **/.streamlit/config.toml
 **/.streamlit/credentials.toml
 
-# --- Docker ---
-# Docker files and overrides
-*.dockerignore
+# --- Docker (vain henkilökohtaiset tai väliaikaiset) ---
 docker-compose.override.yml
-
-# Docker build artifacts
-**/Dockerfile
-**/docker-compose*.yml
-**/docker-compose*.yaml
-**/Dockerfile*
-
-# Local Docker volumes
 volumes/
 tmp/
 data/
 
-# Optional: axe-core scanner results
-axe-results/
-
-# Secrets (customize if needed)
+# --- Muut ---
+# Ympäristömuuttujat ja salaisuudet
 .env
 .env.*
+# axe-core skannerin tulokset (jos käytössä)
+axe-results/
