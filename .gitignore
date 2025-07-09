@@ -1,0 +1,80 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Pipenv / Poetry
+Pipfile.lock
+poetry.lock
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Caches and tooling
+.cache/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.pytype/
+.pyre/
+coverage.xml
+htmlcov/
+.coverage*
+*.cover
+
+# Jupyter and notebooks
+.ipynb_checkpoints/
+
+# IDEs and editors
+.vscode/
+.idea/
+.DS_Store
+
+# --- Streamlit ---
+.streamlit/
+**/.streamlit/config.toml
+**/.streamlit/credentials.toml
+
+# --- Docker ---
+# Docker files and overrides
+*.dockerignore
+docker-compose.override.yml
+
+# Docker build artifacts
+**/Dockerfile
+**/docker-compose*.yml
+**/docker-compose*.yaml
+**/Dockerfile*
+
+# Local Docker volumes
+volumes/
+tmp/
+data/
+
+# Optional: axe-core scanner results
+axe-results/
+
+# Secrets (customize if needed)
+.env
+.env.*
