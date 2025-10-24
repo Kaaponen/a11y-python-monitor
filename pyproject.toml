@@ -1,0 +1,74 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "a11y-scanner"
+version = "1.0.0"
+description = "Python-pohjainen saavutettavuustyökalu"
+authors = [{name = "Saavutettavuusskanneri Team"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["accessibility", "a11y", "testing", "web"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Quality Assurance",
+]
+
+dependencies = [
+    "playwright",
+    "requests",
+    "aiohttp", 
+    "aiofiles",
+    "beautifulsoup4",
+    "lxml",
+    "streamlit",
+    "openai",
+    "validators",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio", 
+    "black",
+    "flake8",
+    "mypy",
+    "pytest-cov",
+]
+
+[project.scripts]
+a11y-scan = "cli:main"
+a11y-ui = "app:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = "E203,W503"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"

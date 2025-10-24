@@ -1,0 +1,71 @@
+# GitHub Issue Templates
+
+name: 🐛 Bug Report
+description: Raportoi bugista tai ongelmasta
+title: "[BUG] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kiitos että raportoit bugista! Täytä alla olevat kentät mahdollisimman tarkasti.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Kuvaus
+      description: Lyhyt ja selkeä kuvaus ongelmasta
+      placeholder: Kerro mitä tapahtui...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Toistaminen
+      description: Askelet ongelman toistamiseksi
+      placeholder: |
+        1. Mene sivulle '...'
+        2. Klikkaa '...'
+        3. Vieritä alas '...'
+        4. Katso virhe
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Odotettu käyttäytyminen
+      description: Mitä odotit tapahtuvan?
+      placeholder: Kerro mitä odotit...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Todellinen käyttäytyminen
+      description: Mitä oikeasti tapahtui?
+      placeholder: Kerro mitä tapahtui...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🌍 Ympäristö
+      description: Kerro käyttämästäsi ympäristöstä
+      placeholder: |
+        - OS: [esim. macOS 14.0]
+        - Python: [esim. 3.11.0]
+        - A11y Scanner versio: [esim. 1.0.0]
+        - Selain: [esim. Chrome 118]
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Lisätiedot
+      description: Muuta hyödyllistä tietoa
+      placeholder: Liitä kuvakaappauksia, lokeja tai muita tiedostoja...

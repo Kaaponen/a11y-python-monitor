@@ -1,9 +1,9 @@
 import asyncio
 import sys
-from sitemap import get_urls_from_sitemap
-from scanner import run_axe
-from reporter import save_report
-from csv_export import save_csv
+from src.scanner.sitemap import get_urls_from_sitemap
+from src.scanner.core import run_axe
+from src.reports.reporter import save_report
+from src.reports.csv_export import save_csv
 
 async def main():
     args = sys.argv[1:]

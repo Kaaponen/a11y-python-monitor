@@ -1,0 +1,41 @@
+name: 💡 Feature Request
+description: Ehdota uutta ominaisuutta
+title: "[FEATURE] "
+labels: ["enhancement", "feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kiitos ehdotuksestasi! Täytä alla olevat kentät kuvaamaan toivottua ominaisuutta.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Ongelma
+      description: Mikä ongelma tämä ominaisuus ratkaisi?
+      placeholder: Kuvaa ongelma jota ominaisuus ratkaisisi...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Ehdotettu ratkaisu
+      description: Kuvaile miten ominaisuus toimisi
+      placeholder: Kerro miten haluaisit ominaisuuden toimivan...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Vaihtoehdot
+      description: Oletko harkittu muita ratkaisuja?
+      placeholder: Kerro vaihtoehtoisista ratkaisuista...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Lisätiedot
+      description: Muuta hyödyllistä tietoa
+      placeholder: Mockupit, käyttötapaukset, tekniset yksityiskohdat...

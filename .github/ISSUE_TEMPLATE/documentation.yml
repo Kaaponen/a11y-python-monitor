@@ -1,0 +1,41 @@
+name: 📚 Documentation
+description: Dokumentaation parannus tai korjaus
+title: "[DOCS] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kiitos että haluat parantaa dokumentaatiota!
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: 📋 Dokumentaation tyyppi
+      options:
+        - README.md
+        - API dokumentaatio
+        - Käyttöohjeet
+        - Kehittäjädokumentaatio
+        - Koodidokumentaatio
+        - Muu
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: 🎯 Nykyinen ongelma
+      description: Mikä on vikana nykyisessä dokumentaatiossa?
+      placeholder: Kuvaile ongelma...
+    validations:
+      required: true
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: ✨ Ehdotettu parannus
+      description: Miten dokumentaatiota voisi parantaa?
+      placeholder: Kuvaile parannus...
+    validations:
+      required: true

@@ -1,10 +1,16 @@
 import streamlit as st
 import asyncio
-from scanner import run_axe
-from sitemap import get_urls_from_sitemap
-from reporter import save_report
-from csv_export import save_csv
-from json_export import save_json
+import sys
+import os
+
+# Lisää juurihakemisto sys.pathiin
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from src.scanner.core import run_axe
+from src.scanner.sitemap import get_urls_from_sitemap
+from src.reports.reporter import save_report
+from src.reports.csv_export import save_csv
+from src.reports.json_export import save_json
 
 st.set_page_config(page_title="A11y Scanner", layout="wide")
 st.title("🧪 A11y Scanner – Saavutettavuustarkistin (axe-core + Python)")

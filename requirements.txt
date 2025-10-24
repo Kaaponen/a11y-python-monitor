@@ -5,3 +5,13 @@ aiofiles
 beautifulsoup4
 lxml
 streamlit
+openai
+validators
+pytest
+pytest-asyncio
+pytest-cov
+black
+flake8
+mypy
+bandit
+safety

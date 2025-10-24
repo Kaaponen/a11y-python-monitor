@@ -68,3 +68,13 @@ data/
 .env.*
 # axe-core skannerin tulokset (jos käytössä)
 axe-results/
+# Raportit
+reports/
+*.json
+*.csv
+*.md
+*.html
+
+# Väliaikaiset tiedostot
+*.tmp
+*.temp
