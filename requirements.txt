@@ -7,6 +7,9 @@ lxml
 streamlit
 openai
 validators
+psutil
+click
+flask
 pytest
 pytest-asyncio
 pytest-cov

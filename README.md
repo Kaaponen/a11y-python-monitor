@@ -1,6 +1,6 @@
-# A11y Scanner 🔍
+# Saavutettavuusskanneri 🔍
 
-Modern Python-pohjainen saavutettavuustyökalu, joka käyttää Playwright-selainta ja axe-core-kirjastoa web-sivujen automaattiseen saavutettavuustarkistukseen.
+Moderni Python-pohjainen saavutettavuustyökalu, joka käyttää Playwright-selainta ja axe-core-kirjastoa web-sivujen automaattiseen saavutettavuustarkistukseen.
 
 ## ✨ Ominaisuudet
 
@@ -11,6 +11,9 @@ Modern Python-pohjainen saavutettavuustyökalu, joka käyttää Playwright-selai
 - 🗺️ **Sitemap-tuki** - Koko sivuston skannaus kerralla
 - 🤖 **AI-analyysi** - GPT-4o alt-tekstien arviointi
 - 🐳 **Docker-tuki** - Helppo käyttöönotto
+- 🏥 **Terveydenvalvonta** - Reaaliaikainen suorituskyvyn seuranta
+- 📈 **Mittaristo** - Yksityiskohtaiset mittarit ja tilastot
+- 🔍 **Strukturoitu lokitus** - JSON-muotoinen lokitus ja virheenseuranta
 
 ## 🚀 Pika-asennus
 
@@ -45,6 +48,25 @@ make install-dev
 ```
 
 ## 🔧 Käyttö
+
+### Komentorivikäyttöliittymä (CLI)
+
+```bash
+# Skannaa yksittäinen sivu
+python3 cli.py scan https://example.com
+
+# Skannaa sivusto sitemapista
+python3 cli.py scan --sitemap https://example.com/sitemap.xml
+
+# Tarkista terveydenvalvonta
+python3 cli.py health status
+
+# Käynnistä terveydenvalvonta
+python3 cli.py health start-monitoring
+
+# Näytä suorituskykymittarit
+python3 cli.py health metrics --hours 24
+```
 
 ### Web-käyttöliittymä
 
