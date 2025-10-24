@@ -9,21 +9,26 @@ from playwright.async_api import async_playwright
 from ..utils.logger import get_logger, log_performance
 from ..utils.exceptions import ScannerError, BrowserError, NetworkError, TimeoutError
 from ..utils.health_monitor import get_health_monitor
+from ..security.input_validation import get_security_validator
+from ..security.rate_limiting import get_rate_limiter
 
 
 # Logger for this module
 logger = get_logger(__name__)
 health_monitor = get_health_monitor()
+security_validator = get_security_validator()
+rate_limiter = get_rate_limiter()
 
 
 @log_performance
-async def run_axe(url: str, timeout: int = 30) -> Dict[str, Any]:
+async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None) -> Dict[str, Any]:
     """
     Skannaa sivun saavutettavuuden käyttäen axe-corea
     
     Args:
         url: Skannattavan sivun URL
         timeout: Aikakatkaisu sekunteina
+        client_id: Client ID for rate limiting
         
     Returns:
         Axe-core tulokset dict muodossa
@@ -33,24 +38,53 @@ async def run_axe(url: str, timeout: int = 30) -> Dict[str, Any]:
         BrowserError: Jos selainongelmat
         NetworkError: Jos verkko-ongelmat
         TimeoutError: Jos aikakatkaisu
+        SecurityError: Jos turvallisuusvalidointi epäonnistuu
     """
-    from ..utils.validators import is_valid_url
-    
     scan_id = str(uuid.uuid4())
     start_time = time.time()
+    
+    # Generate client ID if not provided
+    if client_id is None:
+        client_id = f"scanner_{hash(url) % 10000}"
+    
+    # Rate limiting check
+    allowed, reason = rate_limiter.check_rate_limit(client_id, "scan")
+    if not allowed:
+        logger.warning("Rate limit exceeded", extra={
+            "client_id": client_id,
+            "url": url,
+            "reason": reason
+        })
+        raise ScannerError(f"Rate limit exceeded: {reason}")
     
     # Aloita health monitoring
     health_monitor.start_scan(scan_id, url)
     
-    # Validoi URL
-    if not is_valid_url(url):
-        logger.error("Invalid URL provided", extra={
-            "url": url,
-            "scan_id": scan_id,
-            "error_type": "validation_error"
-        })
-        health_monitor.fail_scan(scan_id, "validation_error")
-        raise ScannerError(f"Invalid URL: {url}")
+    # Security validation
+    try:
+        validation_result = security_validator.validate_url(url, allow_private=False)
+        if not validation_result['valid']:
+            security_issues = ', '.join(validation_result['security_issues'])
+            logger.error("URL security validation failed", extra={
+                "url": url,
+                "scan_id": scan_id,
+                "security_issues": validation_result['security_issues']
+            })
+            health_monitor.fail_scan(scan_id, "security_validation_failed")
+            raise ScannerError(f"URL security validation failed: {security_issues}")
+    except Exception as e:
+        if "SecurityError" in str(type(e)):
+            raise
+        # Fallback to basic validation
+        from ..utils.validators import is_valid_url
+        if not is_valid_url(url):
+            logger.error("Invalid URL provided", extra={
+                "url": url,
+                "scan_id": scan_id,
+                "error_type": "validation_error"
+            })
+            health_monitor.fail_scan(scan_id, "validation_error")
+            raise ScannerError(f"Invalid URL: {url}")
     
     logger.info("Starting accessibility scan", extra={
         "url": url,

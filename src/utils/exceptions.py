@@ -149,3 +149,21 @@ class FileError(Exception):
             parts.append(f"for {self.file_path}")
         parts.append(f": {self.message}")
         return " ".join(parts)
+
+
+class SecurityError(ScannerError):
+    """Turvallisuusvirheet"""
+    
+    def __init__(self, message: str, error_type: str = None, source: str = None):
+        super().__init__(message)
+        self.error_type = error_type
+        self.source = source
+    
+    def __str__(self):
+        parts = ["Security error"]
+        if self.error_type:
+            parts.append(f"({self.error_type})")
+        if self.source:
+            parts.append(f"from {self.source}")
+        parts.append(f": {self.message}")
+        return " ".join(parts)

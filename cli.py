@@ -9,6 +9,7 @@ from src.scanner.core import run_axe
 from src.reports.reporter import save_report
 from src.reports.csv_export import save_csv
 from src.utils.health_cli import health
+from src.utils.security_cli import security
 from src.utils.health_monitor import initialize_health_monitoring
 from src.utils.logger import get_logger
 
@@ -111,8 +112,9 @@ def scan(url, sitemap, filter, timeout, output_dir, formats, verbose):
     asyncio.run(run_scans())
 
 
-# Add health commands
+# Add health and security commands
 cli.add_command(health)
+cli.add_command(security)
 
 
 @cli.command()
