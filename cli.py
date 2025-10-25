@@ -32,8 +32,11 @@ def cli():
 @click.option('--output-dir', default='reports', help='Output directory for reports')
 @click.option('--format', 'formats', multiple=True, default=['html', 'json'], 
               help='Output formats (html, json, csv)')
+@click.option('--screenshots', is_flag=True, help='Capture screenshots of violation elements')
+@click.option('--screenshot-dir', default='reports/screenshots', help='Directory for screenshots')
+@click.option('--max-screenshots', default=10, help='Maximum screenshots per violation')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose output')
-def scan(url, sitemap, filter, timeout, output_dir, formats, verbose):
+def scan(url, sitemap, filter, timeout, output_dir, formats, screenshots, screenshot_dir, max_screenshots, verbose):
     """Scan website(s) for accessibility issues"""
     
     # Determine URLs to scan
@@ -61,10 +64,29 @@ def scan(url, sitemap, filter, timeout, output_dir, formats, verbose):
     async def run_scans():
         click.echo("🔍 Aloitetaan skannaukset...")
         
+        # Configure screenshots if enabled
+        screenshot_config = {}
+        if screenshots:
+            click.echo(f"📸 Kuvakaappaukset käytössä: {screenshot_dir}")
+            screenshot_config = {
+                'output_dir': screenshot_dir,
+                'max_screenshots': min(max_screenshots, 5),
+                'max_screenshots_per_node': 3,
+                'capture_overview': True,
+                'highlight_violations': True,
+                'element_padding': 20,
+                'image_format': 'png'
+            }
+        
         with click.progressbar(urls, label='Skannataan') as progress_urls:
             tasks = []
             for scan_url in progress_urls:
-                task = run_axe(scan_url, timeout)
+                task = run_axe(
+                    scan_url, 
+                    timeout=timeout,
+                    capture_screenshots=screenshots,
+                    screenshot_config=screenshot_config if screenshots else None
+                )
                 tasks.append(task)
             
             results = await asyncio.gather(*tasks, return_exceptions=True)

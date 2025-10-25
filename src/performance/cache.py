@@ -413,32 +413,33 @@ def cache_result(key_func=None, ttl=None, skip_cache=None):
                 logger.debug("Cache skipped", extra={"function": func.__name__})
                 return await func(*args, **kwargs)
             
-        try:
-            # Yritä hakea cache:sta
-            cached_result = await cache_manager.get(cache_key)
-            if cached_result is not None:
-                logger.debug("Cache hit for function", extra={
-                    "function": func.__name__,
-                    "cache_key": cache_key
-                })
-                return cached_result
-        except Exception as e:
-            logger.warning(f"Cache get failed, falling back to function execution: {e}")
-            # Jos cache epäonnistuu, suorita funktio suoraan
-            return await func(*args, **kwargs)
+            try:
+                # Yritä hakea cache:sta
+                cached_result = await cache_manager.get(cache_key)
+                if cached_result is not None:
+                    logger.debug("Cache hit for function", extra={
+                        "function": func.__name__,
+                        "cache_key": cache_key
+                    })
+                    return cached_result
+            except Exception as e:
+                logger.warning(f"Cache get failed, falling back to function execution: {e}")
             
             # Suorita funktio ja tallenna tulos
             result = await func(*args, **kwargs)
             
             if result is not None:
-                await cache_manager.set(cache_key, result, ttl)
-                logger.debug("Result cached", extra={
-                    "function": func.__name__,
-                    "cache_key": cache_key
-                })
+                try:
+                    await cache_manager.set(cache_key, result, ttl)
+                    logger.debug("Result cached", extra={
+                        "function": func.__name__,
+                        "cache_key": cache_key
+                    })
+                except Exception as e:
+                    logger.warning(f"Cache set failed: {e}")
             
             return result
-        
+            
         return wrapper
     return decorator
 

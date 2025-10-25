@@ -24,6 +24,9 @@ from ..performance.fallback_cache import cache_result, get_cached_scan_result, c
 
 from ..performance.memory_optimizer import optimize_memory, track_scan_result
 
+# Screenshot capture
+from ..reports.screenshots import create_screenshot_capture
+
 
 # Logger for this module
 logger = get_logger(__name__)
@@ -34,11 +37,16 @@ rate_limiter = get_rate_limiter()
 
 @optimize_memory(track_objects=True)
 @cache_result(
-    key_func=lambda url, timeout=30, **kwargs: f"axe_scan:{url}:{timeout}",
+    key_func=lambda url, timeout=30, capture_screenshots=False, **kwargs: f"axe_scan:{url}:{timeout}:{capture_screenshots}",
     ttl=3600  # Cache results for 1 hour
 )
 @log_performance
-async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None, use_cache: bool = True) -> Dict[str, Any]:
+async def run_axe(url: str, 
+                  timeout: int = 30, 
+                  client_id: Optional[str] = None, 
+                  use_cache: bool = True,
+                  capture_screenshots: bool = False,
+                  screenshot_config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Skannaa sivun saavutettavuuden käyttäen axe-corea
     
@@ -47,9 +55,11 @@ async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None, 
         timeout: Aikakatkaisu sekunteina
         client_id: Client ID for rate limiting
         use_cache: Käytä välimuistia
+        capture_screenshots: Ota kuvakaappauksia virheellisistä elementeistä
+        screenshot_config: Kuvakaappausten konfiguraatio
         
     Returns:
-        Axe-core tulokset dict muodossa
+        Axe-core tulokset dict muodossa, mahdollisesti kuvakaappausten kanssa
         
     Raises:
         ScannerError: Jos skannaus epäonnistuu
@@ -160,6 +170,16 @@ async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None, 
                 
                 duration = time.time() - start_time
                 violation_count = len(axe_results.get('violations', []))
+                
+                # Capture screenshots if requested
+                if capture_screenshots and violation_count > 0:
+                    await _capture_violation_screenshots(
+                        page, 
+                        axe_results, 
+                        url, 
+                        scan_id, 
+                        screenshot_config or {}
+                    )
                 
                 # Merkitse skannaus onnistuneeksi
                 health_monitor.complete_scan(scan_id, violation_count)
@@ -279,6 +299,120 @@ def format_results(results: Dict[str, Any]) -> Dict[str, Any]:
     })
     
     return formatted
+
+
+async def _capture_violation_screenshots(page, 
+                                       axe_results: Dict[str, Any], 
+                                       url: str, 
+                                       scan_id: str,
+                                       screenshot_config: Dict[str, Any]):
+    """
+    Capture screenshots of elements with accessibility violations
+    
+    Args:
+        page: Playwright page object
+        axe_results: Results from axe-core analysis
+        url: Page URL
+        scan_id: Unique scan identifier
+        screenshot_config: Screenshot configuration
+    """
+    try:
+        # Initialize screenshot capture
+        screenshot_capture = create_screenshot_capture(**screenshot_config)
+        
+        violations = axe_results.get('violations', [])
+        screenshot_count = 0
+        
+        logger.info("Starting screenshot capture", extra={
+            "url": url,
+            "scan_id": scan_id,
+            "violations_count": len(violations)
+        })
+        
+        # Capture page overview first
+        if screenshot_config.get('capture_overview', True):
+            overview_info = await screenshot_capture.capture_page_overview(page, violations)
+            if overview_info:
+                axe_results['page_overview_screenshot'] = overview_info
+        
+        # Process each violation
+        for violation in violations:
+            violation_screenshots = []
+            
+            # Process each node in the violation
+            for node_index, node in enumerate(violation.get('nodes', [])):
+                node_screenshots = []
+                
+                # Process each target selector
+                for target in node.get('target', []):
+                    try:
+                        screenshot_info = await screenshot_capture.capture_violation_element(
+                            page, 
+                            target, 
+                            violation, 
+                            node_index
+                        )
+                        
+                        if screenshot_info:
+                            node_screenshots.append(screenshot_info)
+                            screenshot_count += 1
+                            
+                            # Add base64 data directly to node for UI display
+                            if 'base64_data' in screenshot_info and not node.get('screenshot'):
+                                node['screenshot'] = screenshot_info['base64_data']
+                            
+                            # Limit screenshots per violation to prevent overflow
+                            if len(node_screenshots) >= screenshot_config.get('max_screenshots_per_node', 3):
+                                break
+                                
+                    except Exception as e:
+                        logger.warning("Failed to capture screenshot for target", extra={
+                            "target": target,
+                            "violation_id": violation.get('id'),
+                            "error": str(e)
+                        })
+                        continue
+                
+                # Add screenshots to node data
+                if node_screenshots:
+                    node['screenshots'] = node_screenshots
+                    violation_screenshots.extend(node_screenshots)
+                
+                # Limit nodes per violation
+                if node_index >= screenshot_config.get('max_nodes_per_violation', 5):
+                    break
+            
+            # Add violation-level screenshot info
+            if violation_screenshots:
+                violation['screenshots'] = violation_screenshots
+        
+        # Add metadata about screenshots
+        axe_results['screenshot_metadata'] = {
+            'total_screenshots': screenshot_count,
+            'capture_timestamp': time.time(),
+            'scan_id': scan_id,
+            'output_directory': str(screenshot_capture.output_dir),
+            'image_format': screenshot_capture.image_format
+        }
+        
+        logger.info("Screenshot capture completed", extra={
+            "url": url,
+            "scan_id": scan_id,
+            "total_screenshots": screenshot_count
+        })
+        
+    except Exception as e:
+        logger.error("Failed to capture violation screenshots", extra={
+            "url": url,
+            "scan_id": scan_id,
+            "error": str(e)
+        }, exc_info=True)
+        
+        # Add error info to results
+        axe_results['screenshot_error'] = {
+            'error': str(e),
+            'timestamp': time.time()
+        }
 
 
 if __name__ == "__main__":

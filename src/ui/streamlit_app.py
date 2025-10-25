@@ -49,6 +49,24 @@ def validate_and_filter_urls(urls):
 st.set_page_config(page_title="A11y Scanner", layout="wide")
 st.title("🧪 A11y Scanner – Saavutettavuustarkistin (axe-core + Python)")
 
+# Asetukset sivupalkki
+with st.sidebar:
+    st.header("⚙️ Asetukset")
+    
+    # Screenshot settings
+    st.subheader("📸 Kuvakaappaukset")
+    enable_screenshots = st.checkbox("Ota kuvakaappauksia virheellisistä elementeistä", value=False)
+    
+    if enable_screenshots:
+        highlight_violations = st.checkbox("Korosta virheelliset elementit", value=True)
+        element_padding = st.slider("Elementin padding (px)", min_value=0, max_value=50, value=20)
+        max_screenshots = st.slider("Max kuvakaappauksia per virhe", min_value=1, max_value=10, value=3)
+        capture_overview = st.checkbox("Ota yleiskuva sivusta", value=True)
+    
+    # Advanced settings
+    st.subheader("🔧 Lisäasetukset")
+    scan_timeout = st.slider("Skannauksen timeout (s)", min_value=10, max_value=120, value=30)
+
 mode = st.radio("Valitse tarkistusmuoto:", ["Yksittäinen URL", "Sitemap.xml"])
 urls = []
 
@@ -80,12 +98,34 @@ if urls and st.button("🚀 Skannaa saavutettavuus"):
         if len(urls) > 10:
             st.write(f"... ja {len(urls) - 10} muuta")
     
+    # Configure screenshot settings
+    screenshot_config = None
+    if enable_screenshots:
+        screenshot_config = {
+            'output_dir': 'reports/screenshots',
+            'highlight_violations': highlight_violations,
+            'element_padding': element_padding,
+            'max_screenshots_per_node': max_screenshots,
+            'max_nodes_per_violation': 3,
+            'capture_overview': capture_overview,
+            'image_format': 'png'
+        }
+        st.info(f"📸 Kuvakaappaukset käytössä (max {max_screenshots} per virhe)")
+    
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     
     try:
         results = loop.run_until_complete(
-            asyncio.gather(*[run_axe(u) for u in urls]))
+            asyncio.gather(*[
+                run_axe(
+                    u, 
+                    timeout=scan_timeout,
+                    capture_screenshots=enable_screenshots,
+                    screenshot_config=screenshot_config
+                ) for u in urls
+            ])
+        )
         results_by_url = dict(zip(urls, results))
 
         st.success("✅ Skannaus valmis!")
@@ -98,8 +138,18 @@ if urls and st.button("🚀 Skannaa saavutettavuus"):
                     st.markdown(
                         f"**❌ {v['help']}**  \n[{v['helpUrl']}]({v['helpUrl']})")
                     for node in v["nodes"]:
+                        # Näytä kuvakaappaus jos saatavilla
+                        if "screenshot" in node:
+                            st.markdown("**🖼️ Kuvakaappaus elementistä:**")
+                            try:
+                                import base64
+                                screenshot_data = base64.b64decode(node["screenshot"])
+                                st.image(screenshot_data, caption=f"Virhe: {v['id']}", use_column_width=True)
+                            except Exception as e:
+                                st.warning(f"Kuvakaappauksen näyttäminen epäonnistui: {e}")
+                        
+                        st.code(node["html"])
                         for check in node["any"]:
-                            st.code(node["html"])
                             st.markdown(f"- {check['message']}")
 
         md_path, html_path = save_report(results_by_url)
