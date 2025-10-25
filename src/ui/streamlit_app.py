@@ -2,6 +2,7 @@ import streamlit as st
 import asyncio
 import sys
 import os
+from urllib.parse import urlparse
 
 # Lisää juurihakemisto sys.pathiin
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -12,6 +13,39 @@ from src.reports.reporter import save_report
 from src.reports.csv_export import save_csv
 from src.reports.json_export import save_json
 
+
+def normalize_url(url):
+    """Normalize URL to ensure it has a proper protocol"""
+    if not url:
+        return url
+    
+    url = url.strip()
+    if not url:
+        return url
+    
+    # Check if URL already has a protocol
+    parsed = urlparse(url)
+    if parsed.scheme in ('http', 'https'):
+        return url
+    elif not parsed.scheme:
+        # No protocol, add https://
+        return f"https://{url}"
+    else:
+        # Invalid protocol, skip this URL
+        return None
+
+
+def validate_and_filter_urls(urls):
+    """Validate and filter URLs to ensure they're properly formatted"""
+    valid_urls = []
+    for url in urls:
+        normalized = normalize_url(url)
+        if normalized:
+            valid_urls.append(normalized)
+        else:
+            st.warning(f"Ohitettu epäkelpo URL: {url}")
+    return valid_urls
+
 st.set_page_config(page_title="A11y Scanner", layout="wide")
 st.title("🧪 A11y Scanner – Saavutettavuustarkistin (axe-core + Python)")
 
@@ -21,48 +55,79 @@ urls = []
 if mode == "Yksittäinen URL":
     url = st.text_input("Syötä tarkistettava URL", "https://example.com")
     if url:
-        urls.append(url)
+        normalized_url = normalize_url(url)
+        if normalized_url:
+            urls.append(normalized_url)
+        else:
+            st.error(f"Epäkelpo URL: {url}")
 else:
     sitemap_url = st.text_input(
         "Sitemap.xml osoite", "https://example.com/sitemap.xml")
     path_filter = st.text_input("Suodata polkualulla (esim. /fi/)", "")
     if st.button("Hae URL-osoitteet sitemapista"):
         with st.spinner("Haetaan sivuja..."):
-            urls = get_urls_from_sitemap(sitemap_url, path_filter or None)
-        st.success(f"Löytyi {len(urls)} sivua")
+            raw_urls = get_urls_from_sitemap(sitemap_url, path_filter or None)
+            urls = validate_and_filter_urls(raw_urls)
+        st.success(f"Löytyi {len(urls)} kelvollista sivua ({len(raw_urls)} yhteensä)")
 
 if urls and st.button("🚀 Skannaa saavutettavuus"):
     st.info("Skannaus käynnissä... Tämä voi kestää hetken.")
+    
+    # Näytä skandattavat URL:t debuggausta varten
+    with st.expander("Skannattavat URL:t"):
+        for i, url in enumerate(urls[:10], 1):  # Näytä max 10 ensimmäistä
+            st.write(f"{i}. {url}")
+        if len(urls) > 10:
+            st.write(f"... ja {len(urls) - 10} muuta")
+    
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    results = loop.run_until_complete(
-        asyncio.gather(*[run_axe(u) for u in urls]))
-    results_by_url = dict(zip(urls, results))
+    
+    try:
+        results = loop.run_until_complete(
+            asyncio.gather(*[run_axe(u) for u in urls]))
+        results_by_url = dict(zip(urls, results))
 
-    st.success("✅ Skannaus valmis!")
-    for url, result in results_by_url.items():
-        st.subheader(url)
-        if not result.get("violations"):
-            st.markdown("✅ Ei saavutettavuusvirheitä!")
-        else:
-            for v in result["violations"]:
-                st.markdown(
-                    f"**❌ {v['help']}**  \n[{v['helpUrl']}]({v['helpUrl']})")
-                for node in v["nodes"]:
-                    for check in node["any"]:
-                        st.code(node["html"])
-                        st.markdown(f"- {check['message']}")
+        st.success("✅ Skannaus valmis!")
+        for url, result in results_by_url.items():
+            st.subheader(url)
+            if not result.get("violations"):
+                st.markdown("✅ Ei saavutettavuusvirheitä!")
+            else:
+                for v in result["violations"]:
+                    st.markdown(
+                        f"**❌ {v['help']}**  \n[{v['helpUrl']}]({v['helpUrl']})")
+                    for node in v["nodes"]:
+                        for check in node["any"]:
+                            st.code(node["html"])
+                            st.markdown(f"- {check['message']}")
 
-    md_path, html_path = save_report(results_by_url)
-    csv_path = save_csv(results_by_url)
-    json_path = save_json(results_by_url)
+        md_path, html_path = save_report(results_by_url)
+        csv_path = save_csv(results_by_url)
+        json_path = save_json(results_by_url)
 
-    st.markdown("### 📁 Lataa raportit:")
-    st.download_button("📄 Markdown", data=open(
-        md_path, "rb"), file_name=md_path.name)
-    st.download_button("🌐 HTML", data=open(
-        html_path, "rb"), file_name=html_path.name)
-    st.download_button("📊 CSV", data=open(
-        csv_path, "rb"), file_name=csv_path.name)
-    st.download_button("🧾 JSON", data=open(
-        json_path, "rb"), file_name=json_path.name)
+        st.markdown("### 📁 Lataa raportit:")
+        
+        # Extract filenames from paths
+        import os
+        st.download_button("📄 Markdown", data=open(
+            md_path, "rb"), file_name=os.path.basename(md_path))
+        st.download_button("🌐 HTML", data=open(
+            html_path, "rb"), file_name=os.path.basename(html_path))
+        st.download_button("📊 CSV", data=open(
+            csv_path, "rb"), file_name=os.path.basename(csv_path))
+        st.download_button("🧾 JSON", data=open(
+            json_path, "rb"), file_name=os.path.basename(json_path))
+        
+    except Exception as e:
+        st.error(f"Virhe skannauksessa: {str(e)}")
+        st.write("Tarkista että URL:t ovat oikeassa muodossa (esim. https://example.com)")
+        
+        # Lisää debugging tietoa
+        with st.expander("Debugging tiedot"):
+            st.write(f"**Virhe tyyppi:** {type(e).__name__}")
+            st.write(f"**Virhe viesti:** {str(e)}")
+            st.write(f"**URL määrä:** {len(urls)}")
+            st.write(f"**Ensimmäinen URL:** {urls[0] if urls else 'Ei URL:ja'}")
+    finally:
+        loop.close()

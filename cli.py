@@ -10,6 +10,7 @@ from src.reports.reporter import save_report
 from src.reports.csv_export import save_csv
 from src.utils.health_cli import health
 from src.utils.security_cli import security
+from src.utils.performance_cli import performance
 from src.utils.health_monitor import initialize_health_monitoring
 from src.utils.logger import get_logger
 
@@ -112,9 +113,10 @@ def scan(url, sitemap, filter, timeout, output_dir, formats, verbose):
     asyncio.run(run_scans())
 
 
-# Add health and security commands
+# Add health, security and performance commands
 cli.add_command(health)
 cli.add_command(security)
+cli.add_command(performance)
 
 
 @cli.command()
@@ -122,6 +124,7 @@ def version():
     """Show version information"""
     click.echo("Saavutettavuusskanneri v1.0.0")
     click.echo("Accessibility Scanner for Finnish websites")
+    click.echo("Performance optimizations: Cache, Rate limiting, Connection pooling")
 
 
 if __name__ == "__main__":

@@ -18,3 +18,11 @@ flake8
 mypy
 bandit
 safety
+
+# Performance optimization dependencies
+redis>=4.5.0
+aioredis>=2.0.0
+
+# Additional async and performance libraries
+uvloop>=0.17.0
+orjson>=3.8.0

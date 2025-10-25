@@ -12,6 +12,18 @@ from ..utils.health_monitor import get_health_monitor
 from ..security.input_validation import get_security_validator
 from ..security.rate_limiting import get_rate_limiter
 
+# Try to import Redis cache, fallback to in-memory cache
+try:
+    from ..performance.cache import CacheManager
+    REDIS_AVAILABLE = True
+except Exception:
+    REDIS_AVAILABLE = False
+
+# Always use fallback cache to avoid Redis connection issues
+from ..performance.fallback_cache import cache_result, get_cached_scan_result, cache_scan_result
+
+from ..performance.memory_optimizer import optimize_memory, track_scan_result
+
 
 # Logger for this module
 logger = get_logger(__name__)
@@ -20,8 +32,13 @@ security_validator = get_security_validator()
 rate_limiter = get_rate_limiter()
 
 
+@optimize_memory(track_objects=True)
+@cache_result(
+    key_func=lambda url, timeout=30, **kwargs: f"axe_scan:{url}:{timeout}",
+    ttl=3600  # Cache results for 1 hour
+)
 @log_performance
-async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None) -> Dict[str, Any]:
+async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None, use_cache: bool = True) -> Dict[str, Any]:
     """
     Skannaa sivun saavutettavuuden käyttäen axe-corea
     
@@ -29,6 +46,7 @@ async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None) 
         url: Skannattavan sivun URL
         timeout: Aikakatkaisu sekunteina
         client_id: Client ID for rate limiting
+        use_cache: Käytä välimuistia
         
     Returns:
         Axe-core tulokset dict muodossa
@@ -46,6 +64,18 @@ async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None) 
     # Generate client ID if not provided
     if client_id is None:
         client_id = f"scanner_{hash(url) % 10000}"
+    
+    # Check cache first if enabled
+    if use_cache:
+        cached_result = await get_cached_scan_result(url, "axe")
+        if cached_result:
+            logger.info("Returning cached scan result", extra={
+                "url": url,
+                "scan_id": scan_id,
+                "cache_hit": True
+            })
+            # track_scan_result(cached_result, "axe_cached") # Temporarily disabled due to weak reference issue
+            return cached_result
     
     # Rate limiting check
     allowed, reason = rate_limiter.check_rate_limit(client_id, "scan")
@@ -134,12 +164,32 @@ async def run_axe(url: str, timeout: int = 30, client_id: Optional[str] = None) 
                 # Merkitse skannaus onnistuneeksi
                 health_monitor.complete_scan(scan_id, violation_count)
                 
+                # Cache results if successful and caching enabled
+                if use_cache and axe_results:
+                    try:
+                        await cache_scan_result(url, "axe", axe_results, ttl=3600)
+                        logger.debug("Scan result cached", extra={
+                            "url": url,
+                            "scan_id": scan_id,
+                            "cache_ttl": 3600
+                        })
+                    except Exception as cache_error:
+                        logger.warning("Failed to cache scan result", extra={
+                            "url": url,
+                            "scan_id": scan_id,
+                            "cache_error": str(cache_error)
+                        })
+                
+                # Track result for memory optimization
+                # track_scan_result(axe_results, "axe") # Temporarily disabled due to weak reference issue
+                
                 logger.info("Scan completed successfully", extra={
                     "url": url,
                     "scan_id": scan_id,
                     "duration": duration,
                     "violation_count": violation_count,
-                    "pass_count": len(axe_results.get('passes', []))
+                    "pass_count": len(axe_results.get('passes', [])),
+                    "cached": use_cache
                 })
                 
                 return axe_results
