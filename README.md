@@ -10,7 +10,8 @@ Moderni Python-pohjainen saavutettavuustyökalu, joka käyttää Playwright-sela
 - 💻 **CLI-tuki** - Komentorivikäyttö automatisoinnille
 - 🗺️ **Sitemap-tuki** - Koko sivuston skannaus kerralla
 - 🤖 **AI-analyysi** - GPT-4o alt-tekstien arviointi
-- 🐳 **Docker-tuki** - Helppo käyttöönotto
+- � **Kuvakaappaukset** - Visuaalinen elementtien tunnistus virheistä
+- �🐳 **Docker-tuki** - Helppo käyttöönotto
 - 🏥 **Terveydenvalvonta** - Reaaliaikainen suorituskyvyn seuranta
 - 📈 **Mittaristo** - Yksityiskohtaiset mittarit ja tilastot
 - 🔍 **Strukturoitu lokitus** - JSON-muotoinen lokitus ja virheenseuranta
@@ -72,6 +73,9 @@ make install-dev
 # Skannaa yksittäinen sivu
 python3 cli.py scan https://example.com
 
+# Skannaa kuvakaappausten kanssa
+python3 cli.py scan https://example.com --screenshots --max-screenshots 5
+
 # Skannaa sivusto sitemapista
 python3 cli.py scan --sitemap https://example.com/sitemap.xml
 
@@ -98,7 +102,6 @@ python3 cli.py security scan-dependencies
 
 ```bash
 # Uusi suositeltu tapa
-python app.py
 
 # Tai suoraan Streamlitilla
 streamlit run src/ui/streamlit_app.py
@@ -157,6 +160,61 @@ python cli.py performance ratelimit status
 
 # Nollaa rate limits
 python cli.py performance ratelimit reset
+```
+
+## 📸 Kuvakaappausominaisuus
+
+Skanneri voi ottaa kuvakaappauksia saavutettavuusvirheiden elementeistä paremman visuaalisen tunnistamisen mahdollistamiseksi.
+
+### CLI-käyttö
+
+```bash
+# Ota kuvakaappaukset käyttöön
+python3 cli.py scan https://example.com --screenshots
+
+# Määritä kuvakaappausten enimmäismäärä
+python3 cli.py scan https://example.com --screenshots --max-screenshots 10
+
+# Määritä kuvakaappausten tallennushakemisto
+python3 cli.py scan https://example.com --screenshots --screenshot-dir custom/path
+```
+
+### Web UI -käyttö
+
+Streamlit-käyttöliittymässä kuvakaappaukset voi ottaa käyttöön sivupalkista:
+- ✅ **Ota kuvakaappaukset** - Käyttöönotto/pois päältä
+- 🎨 **Korosta virhe-elementit** - Värikoodattu korostus
+- 📏 **Elementin padding** - Kuvan reunamarginaali (pikseleinä)
+- 🔢 **Max kuvakaappauksia** - Enimmäismäärä per skannaus
+
+### Visuaalinen korostus
+
+Elementit korostetaan automaattisesti vaikavuuden mukaan:
+- 🔴 **Kriittinen** - Punainen reunus (#ff0000)
+- 🟠 **Vakava** - Oranssi reunus (#ff6600)
+- 🟡 **Kohtalainen** - Keltainen reunus (#ffcc00)
+- 🔵 **Vähäinen** - Sininen reunus (#0066ff)
+
+### Raportit
+
+Kuvakaappaukset sisällytetään automaattisesti:
+
+- **HTML-raportteihin** - Upotetut base64-kuvat
+- **Markdown-raportteihin** - Base64-linkit
+- **Web UI:hin** - Reaaliaikainen näyttö
+
+### Esimerkki käytöstä
+
+Kuvakaappausominaisuus on erityisen hyödyllinen tunnistettaessa:
+- Tyhjät linkit (kuten `<a href="..."></a>`)
+- Puuttuvat alt-tekstit kuvissa
+- Kontrastivirheet
+- Lomakeelementit ilman label-tekstejä
+
+```bash
+# Esimerkkiskannaus joka löytää tyhjän LinkedIn-linkin
+python3 cli.py scan https://lahtinen.me --screenshots
+# Tuloksena: kuvakaappaus oranssilla reunuksella korostetusta tyhjästä linkistä
 ```
 
 ## ⚙️ Konfigurointi
