@@ -111,13 +111,11 @@ streamlit run src/ui/streamlit_app.py
 
 ### Komentorivi
 
-
 Yksittäisen sivun skannaus:
 
 ```bash
 python cli.py scan https://example.com
 ```
-
 
 Sitemap-pohjainen skannaus:
 
@@ -197,7 +195,6 @@ python3 cli.py scan --sitemap https://example.com/sitemap.xml --screenshots
 
 ### Web UI -käyttö
 
-
 Streamlit-käyttöliittymässä kuvakaappaukset voi ottaa käyttöön sivupalkista:
 
 - ✅ **Ota kuvakaappaukset** - Käyttöönotto/pois päältä
@@ -206,7 +203,6 @@ Streamlit-käyttöliittymässä kuvakaappaukset voi ottaa käyttöön sivupalkis
 - 🔢 **Max kuvakaappauksia** - Enimmäismäärä per skannaus
 
 ### Visuaalinen korostus
-
 
 Elementit korostetaan automaattisesti vaikavuuden mukaan:
 
@@ -242,7 +238,7 @@ python3 cli.py scan https://lahtinen.me --screenshots
 # Tulokset:
 # ✅ 1/1 skannausta onnistui
 # DEBUG: Node 0 has screenshot: 824 chars    (elementin kuva)
-# DEBUG: Node 1 has screenshot: 552 chars    (elementin kuva)  
+# DEBUG: Node 1 has screenshot: 552 chars    (elementin kuva)
 # DEBUG: Node 2 has screenshot: 1208 chars   (elementin kuva)
 # 📄 HTML-raportti: reports/report_20251025_160138.html
 ```
@@ -252,7 +248,7 @@ python3 cli.py scan https://lahtinen.me --screenshots
 ### Löydettyjen ongelmien esimerkkejä
 
 - 🔗 **Tyhjät linkit** - LinkedIn-linkki ilman tekstiä tai aria-label:ia
-- 🏠 **Landmark-puutteet** - Sisältö ilman landmark-rakenteita  
+- 🏠 **Landmark-puutteet** - Sisältö ilman landmark-rakenteita
 - ⚠️ **Linkki-nimet** - Linkit joissa ei ole tunnistettavaa tekstiä
 
 ### Kuvakaappausten edut
@@ -263,7 +259,6 @@ python3 cli.py scan https://lahtinen.me --screenshots
 4. **Dokumentointi** - Visuaalinen todiste ongelmasta
 
 ### Yleisimmät korjaukset
-
 
 **Tyhjät linkit**:
 
@@ -277,15 +272,20 @@ python3 cli.py scan https://lahtinen.me --screenshots
 </a>
 ```
 
-
 **Kontrastivirheet**:
 
 ```css
 /* Ongelma: teksti punaisella taustalla */
-.text { background: #ff0000; color: #ff9999; }
+.text {
+  background: #ff0000;
+  color: #ff9999;
+}
 
 /* Ratkaisu: riittävä kontrasti */
-.text { background: #ff0000; color: #ffffff; }
+.text {
+  background: #ff0000;
+  color: #ffffff;
+}
 ```
 
 ## ⚙️ Konfigurointi
