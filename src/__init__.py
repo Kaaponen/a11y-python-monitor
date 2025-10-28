@@ -12,6 +12,6 @@ from .reports.reporter import save_report
 
 __all__ = [
     "run_axe",
-    "get_urls_from_sitemap", 
+    "get_urls_from_sitemap",
     "save_report",
 ]

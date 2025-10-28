@@ -3,22 +3,26 @@
 from setuptools import setup, find_packages
 import os
 
+
 # Määritä src-paketti löydökseen
 def find_packages_in_src():
     """Löydä paketit src/ hakemistosta"""
     packages = []
-    for dirpath, dirnames, filenames in os.walk('src'):
-        if '__init__.py' in filenames:
+    for dirpath, dirnames, filenames in os.walk("src"):
+        if "__init__.py" in filenames:
             # Muunna polku paketin nimeksi (src/scanner -> src.scanner)
-            package = dirpath.replace(os.path.sep, '.')
+            package = dirpath.replace(os.path.sep, ".")
             packages.append(package)
     return packages
+
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+    requirements = [
+        line.strip() for line in fh if line.strip() and not line.startswith("#")
+    ]
 
 setup(
     name="a11y-scanner",
@@ -28,7 +32,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages_in_src(),
-    package_dir={'': '.'},  # Paketit löytyvät juurihakemistosta
+    package_dir={"": "."},  # Paketit löytyvät juurihakemistosta
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",

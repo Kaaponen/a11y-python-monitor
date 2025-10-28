@@ -6,7 +6,7 @@ import sys
 from unittest.mock import patch, Mock
 
 # Lisää src polku
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from src.utils import (
     is_valid_url,
@@ -14,12 +14,13 @@ from src.utils import (
     ensure_directory_exists,
     get_timestamp,
     ScannerError,
-    ReportError
+    ReportError,
 )
+
 
 class TestURLValidation:
     """Testit URL validoinnille"""
-    
+
     def test_is_valid_url_valid_http(self):
         """Testi valideille HTTP URL:eille"""
         assert is_valid_url("http://example.com") is True
@@ -56,9 +57,10 @@ class TestURLValidation:
         assert is_valid_url("https://example.com/path?query=värme") is True
         assert is_valid_url("https://example.com/path#fragment") is True
 
+
 class TestFilenameTools:
     """Testit tiedostonimen työkaluille"""
-    
+
     def test_sanitize_filename_basic(self):
         """Testi perustiedostonimen puhdistukselle"""
         assert sanitize_filename("test.txt") == "test.txt"
@@ -71,7 +73,7 @@ class TestFilenameTools:
         assert sanitize_filename("test:file.txt") == "test_file.txt"
         assert sanitize_filename("test*file.txt") == "test_file.txt"
         assert sanitize_filename("test?file.txt") == "test_file.txt"
-        assert sanitize_filename("test\"file\".txt") == "test_file_.txt"
+        assert sanitize_filename('test"file".txt') == "test_file_.txt"
         assert sanitize_filename("test<file>.txt") == "test_file_.txt"
         assert sanitize_filename("test|file.txt") == "test_file.txt"
 
@@ -97,59 +99,61 @@ class TestFilenameTools:
         assert sanitize_filename("AUX.txt") == "AUX_.txt"
         assert sanitize_filename("NUL.txt") == "NUL_.txt"
 
+
 class TestDirectoryTools:
     """Testit hakemiston työkaluille"""
-    
+
     def test_ensure_directory_exists_new_directory(self):
         """Testi uuden hakemiston luomiselle"""
         test_path = "/test/new/directory"
-        
-        with patch('src.utils.os.path.exists') as mock_exists:
-            with patch('src.utils.os.makedirs') as mock_makedirs:
+
+        with patch("src.utils.os.path.exists") as mock_exists:
+            with patch("src.utils.os.makedirs") as mock_makedirs:
                 mock_exists.return_value = False
-                
+
                 ensure_directory_exists(test_path)
-                
+
                 mock_exists.assert_called_once_with(test_path)
                 mock_makedirs.assert_called_once_with(test_path, exist_ok=True)
 
     def test_ensure_directory_exists_existing_directory(self):
         """Testi olemassa olevalle hakemistolle"""
         test_path = "/existing/directory"
-        
-        with patch('src.utils.os.path.exists') as mock_exists:
-            with patch('src.utils.os.makedirs') as mock_makedirs:
+
+        with patch("src.utils.os.path.exists") as mock_exists:
+            with patch("src.utils.os.makedirs") as mock_makedirs:
                 mock_exists.return_value = True
-                
+
                 ensure_directory_exists(test_path)
-                
+
                 mock_exists.assert_called_once_with(test_path)
                 mock_makedirs.assert_not_called()
 
     def test_ensure_directory_exists_permission_error(self):
         """Testi käyttöoikeusvirheelle"""
         test_path = "/restricted/directory"
-        
-        with patch('src.utils.os.path.exists') as mock_exists:
-            with patch('src.utils.os.makedirs') as mock_makedirs:
+
+        with patch("src.utils.os.path.exists") as mock_exists:
+            with patch("src.utils.os.makedirs") as mock_makedirs:
                 mock_exists.return_value = False
                 mock_makedirs.side_effect = PermissionError("Permission denied")
-                
+
                 with pytest.raises(PermissionError):
                     ensure_directory_exists(test_path)
 
+
 class TestTimestampTools:
     """Testit aikaleiman työkaluille"""
-    
+
     def test_get_timestamp_format(self):
         """Testi aikaleiman muotoilun oikeellisuudelle"""
-        with patch('src.utils.datetime') as mock_datetime:
+        with patch("src.utils.datetime") as mock_datetime:
             mock_now = Mock()
             mock_now.strftime.return_value = "2024-01-15_14-30-45"
             mock_datetime.now.return_value = mock_now
-            
+
             timestamp = get_timestamp()
-            
+
             assert timestamp == "2024-01-15_14-30-45"
             mock_datetime.now.assert_called_once()
             mock_now.strftime.assert_called_once_with("%Y-%m-%d_%H-%M-%S")
@@ -157,26 +161,30 @@ class TestTimestampTools:
     def test_get_timestamp_uniqueness(self):
         """Testi aikaisten leimaojen ainutlaatuisuudelle"""
         # Tämä on hieman teoreettinen testi, mutta tarkistaa että funktio toimii
-        with patch('src.utils.datetime') as mock_datetime:
+        with patch("src.utils.datetime") as mock_datetime:
             mock_now = Mock()
-            mock_now.strftime.side_effect = ["2024-01-15_14-30-45", "2024-01-15_14-30-46"]
+            mock_now.strftime.side_effect = [
+                "2024-01-15_14-30-45",
+                "2024-01-15_14-30-46",
+            ]
             mock_datetime.now.return_value = mock_now
-            
+
             timestamp1 = get_timestamp()
             timestamp2 = get_timestamp()
-            
+
             # Ei välttämättä ole eri, mutta funktio toimii
             assert timestamp1 == "2024-01-15_14-30-45"
             assert timestamp2 == "2024-01-15_14-30-46"
 
+
 class TestCustomExceptions:
     """Testit mukautetuille poikkeuksille"""
-    
+
     def test_scanner_error_creation(self):
         """Testi ScannerError luomiselle"""
         error_msg = "Scanner failed to process URL"
         error = ScannerError(error_msg)
-        
+
         assert str(error) == error_msg
         assert isinstance(error, Exception)
 
@@ -184,24 +192,24 @@ class TestCustomExceptions:
         """Testi ScannerError luomiselle syyn kanssa"""
         original_error = ValueError("Invalid URL format")
         scanner_error = ScannerError("Failed to validate URL", original_error)
-        
+
         assert "Failed to validate URL" in str(scanner_error)
 
     def test_report_error_creation(self):
         """Testi ReportError luomiselle"""
         error_msg = "Failed to generate report"
         error = ReportError(error_msg)
-        
+
         assert str(error) == error_msg
         assert isinstance(error, Exception)
 
     def test_report_error_inheritance(self):
         """Testi ReportError perinnälle"""
         error = ReportError("Test error")
-        
+
         # Tarkista että se on oikean tyyppinen poikkeus
         assert isinstance(error, Exception)
-        
+
         # Voidaan kiinnittää try-except lohkossa
         try:
             raise error
@@ -210,36 +218,37 @@ class TestCustomExceptions:
         except Exception:
             pytest.fail("ReportError should be caught as ReportError")
 
+
 class TestUtilsIntegration:
     """Integraatiotestit utils-funktioille"""
-    
+
     def test_file_workflow(self):
         """Testi täydelle tiedosto-työnkululle"""
         url = "https://example.com/test file.html"
-        
+
         # Validoi URL
         assert is_valid_url(url) is True
-        
+
         # Sanitoi tiedostonimi
         filename = sanitize_filename("test file.html")
         assert filename == "test_file.html"
-        
+
         # Luo aikaleima
-        with patch('src.utils.datetime') as mock_datetime:
+        with patch("src.utils.datetime") as mock_datetime:
             mock_now = Mock()
             mock_now.strftime.return_value = "2024-01-15_14-30-45"
             mock_datetime.now.return_value = mock_now
-            
+
             timestamp = get_timestamp()
             assert timestamp == "2024-01-15_14-30-45"
 
     def test_error_handling_workflow(self):
         """Testi virheiden käsittelyn työnkululle"""
         invalid_url = "not-a-valid-url"
-        
+
         # URL validointi epäonnistuu
         assert is_valid_url(invalid_url) is False
-        
+
         # Voi nostaa ScannerError
         with pytest.raises(ScannerError):
             if not is_valid_url(invalid_url):
@@ -250,14 +259,14 @@ class TestUtilsIntegration:
         # Tyhjät syötteet
         assert is_valid_url("") is False
         assert sanitize_filename("") == "unnamed"
-        
+
         # None-arvot
         assert is_valid_url(None) is False
-        
+
         # Hyvin pitkät syötteet
         long_url = "https://example.com/" + "a" * 1000
         assert is_valid_url(long_url) is True
-        
+
         long_filename = "a" * 300 + ".txt"
         sanitized = sanitize_filename(long_filename)
         assert len(sanitized) <= 255  # Tyypillinen tiedostoniimi maksimi

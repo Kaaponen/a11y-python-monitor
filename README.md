@@ -5,25 +5,26 @@ Moderni Python-pohjainen saavutettavuustyökalu, joka käyttää Playwright-sela
 ## ✨ Ominaisuudet
 
 - 🚀 **Nopea skannaus** - Playwright + axe-core yhdistelmä
-- 📊 **Monipuoliset raportit** - HTML, Markdown, CSV ja JSON 
+- 📊 **Monipuoliset raportit** - HTML, Markdown, CSV ja JSON
 - 🌐 **Web UI** - Streamlit-pohjainen käyttöliittymä
 - 💻 **CLI-tuki** - Komentorivikäyttö automatisoinnille
 - 🗺️ **Sitemap-tuki** - Koko sivuston skannaus kerralla
 - 🤖 **AI-analyysi** - GPT-4o alt-tekstien arviointi
-- � **Kuvakaappaukset** - Visuaalinen elementtien tunnistus virheistä
-- �🐳 **Docker-tuki** - Helppo käyttöönotto
+- 📸 **Element-kuvakaappaukset** - Tarkat kuvakaappaukset ongelmallisista elementeistä
+- � **Docker-tuki** - Helppo käyttöönotto
 - 🏥 **Terveydenvalvonta** - Reaaliaikainen suorituskyvyn seuranta
 - 📈 **Mittaristo** - Yksityiskohtaiset mittarit ja tilastot
 - 🔍 **Strukturoitu lokitus** - JSON-muotoinen lokitus ja virheenseuranta
 
 ### 🚀 **Uudet suorituskykyparannukset:**
+
 - ⚡ **Redis-välimuisti** - 60-80% nopeampi skannaus toistuvilla sivuilla
 - 🛡️ **Rate limiting** - API-kutsujen älykkäs rajoitus ja räjähdyssuojaus
 - 🔗 **Connection pooling** - 70% vähemmän verkkolatenssia
 - 💾 **Memory optimization** - 30-50% vähemmä muistinkäyttöä
 - � **Performance monitoring** - Reaaliaikainen suorituskyvyn seuranta
 
-## �🚀 Pika-asennus
+## �� Pika-asennus
 
 ```bash
 # Kloonaa repo
@@ -110,12 +111,16 @@ streamlit run src/ui/streamlit_app.py
 
 ### Komentorivi
 
+
 Yksittäisen sivun skannaus:
+
 ```bash
 python cli.py scan https://example.com
 ```
 
+
 Sitemap-pohjainen skannaus:
+
 ```bash
 python cli.py scan --sitemap https://example.com/sitemap.xml --filter /fi/
 ```
@@ -130,6 +135,7 @@ make docker-run
 ## ⚡ Suorituskykyominaisuudet
 
 ### Cache-hallinta
+
 ```bash
 # Tarkista cache-tila
 python cli.py performance cache status
@@ -142,6 +148,7 @@ python cli.py performance overview
 ```
 
 ### Memory-optimointi
+
 ```bash
 # Muistin tila
 python cli.py performance memory status
@@ -154,6 +161,7 @@ python cli.py performance memory start
 ```
 
 ### Rate limiting
+
 ```bash
 # Rate limiting -tila
 python cli.py performance ratelimit status
@@ -164,7 +172,15 @@ python cli.py performance ratelimit reset
 
 ## 📸 Kuvakaappausominaisuus
 
-Skanneri voi ottaa kuvakaappauksia saavutettavuusvirheiden elementeistä paremman visuaalisen tunnistamisen mahdollistamiseksi.
+Skanneri ottaa **tarkat element-kuvakaappaukset** saavutettavuusvirheiden elementeistä paremman visuaalisen tunnistamisen mahdollistamiseksi. Kuvakaappaukset näyttävät täsmälleen ongelmallisen elementin eikä koko sivua.
+
+### Tekniset ominaisuudet
+
+- 🎯 **Tarkka element-kohdistus** - Kuvakaappaus vain ongelmallisesta elementistä
+- 🔍 **Automaattinen fallback** - Jos elementti on piilotettu, käytetään bounding box -menetelmää
+- 📐 **Säädettävä padding** - Elementin ympärille lisättävä tila
+- 💾 **Base64-upotus** - Kuvat upotetaan suoraan HTML-raportteihin
+- ⚡ **Optimoitu koko** - Elementti-kuvat ovat huomattavasti pienempiä kuin kokosivu-kuvat
 
 ### CLI-käyttö
 
@@ -172,16 +188,18 @@ Skanneri voi ottaa kuvakaappauksia saavutettavuusvirheiden elementeistä paremma
 # Ota kuvakaappaukset käyttöön
 python3 cli.py scan https://example.com --screenshots
 
-# Määritä kuvakaappausten enimmäismäärä
-python3 cli.py scan https://example.com --screenshots --max-screenshots 10
+# Määritä tulosteen hakemisto
+python3 cli.py scan https://example.com --screenshots --output-dir my_reports
 
-# Määritä kuvakaappausten tallennushakemisto
-python3 cli.py scan https://example.com --screenshots --screenshot-dir custom/path
+# Skannaa sivusto sitemapista kuvakaappausten kanssa
+python3 cli.py scan --sitemap https://example.com/sitemap.xml --screenshots
 ```
 
 ### Web UI -käyttö
 
+
 Streamlit-käyttöliittymässä kuvakaappaukset voi ottaa käyttöön sivupalkista:
+
 - ✅ **Ota kuvakaappaukset** - Käyttöönotto/pois päältä
 - 🎨 **Korosta virhe-elementit** - Värikoodattu korostus
 - 📏 **Elementin padding** - Kuvan reunamarginaali (pikseleinä)
@@ -189,7 +207,9 @@ Streamlit-käyttöliittymässä kuvakaappaukset voi ottaa käyttöön sivupalkis
 
 ### Visuaalinen korostus
 
+
 Elementit korostetaan automaattisesti vaikavuuden mukaan:
+
 - 🔴 **Kriittinen** - Punainen reunus (#ff0000)
 - 🟠 **Vakava** - Oranssi reunus (#ff6600)
 - 🟡 **Kohtalainen** - Keltainen reunus (#ffcc00)
@@ -206,15 +226,66 @@ Kuvakaappaukset sisällytetään automaattisesti:
 ### Esimerkki käytöstä
 
 Kuvakaappausominaisuus on erityisen hyödyllinen tunnistettaessa:
-- Tyhjät linkit (kuten `<a href="..."></a>`)
+
+- Tyhjät linkit ilman tekstiä tai aria-label:ia
+- Kontrastivirheet (teksti punaisella taustalla)
 - Puuttuvat alt-tekstit kuvissa
-- Kontrastivirheet
 - Lomakeelementit ilman label-tekstejä
+- Sisältö ilman landmark-rakenteita
+
+### Käytännön esimerkki
 
 ```bash
-# Esimerkkiskannaus joka löytää tyhjän LinkedIn-linkin
+# Esimerkkiskannaus joka löytää useita ongelmia
 python3 cli.py scan https://lahtinen.me --screenshots
-# Tuloksena: kuvakaappaus oranssilla reunuksella korostetusta tyhjästä linkistä
+
+# Tulokset:
+# ✅ 1/1 skannausta onnistui
+# DEBUG: Node 0 has screenshot: 824 chars    (elementin kuva)
+# DEBUG: Node 1 has screenshot: 552 chars    (elementin kuva)  
+# DEBUG: Node 2 has screenshot: 1208 chars   (elementin kuva)
+# 📄 HTML-raportti: reports/report_20251025_160138.html
+```
+
+💡 **Huomaa**: Kuvakaappaukset ovat nyt 500-1200 merkin kokoisia (element-kuvat) eikä 255,000+ merkin (koko sivu)!
+
+### Löydettyjen ongelmien esimerkkejä
+
+- 🔗 **Tyhjät linkit** - LinkedIn-linkki ilman tekstiä tai aria-label:ia
+- 🏠 **Landmark-puutteet** - Sisältö ilman landmark-rakenteita  
+- ⚠️ **Linkki-nimet** - Linkit joissa ei ole tunnistettavaa tekstiä
+
+### Kuvakaappausten edut
+
+1. **Nopea tunnistus** - Näet heti missä ongelma sijaitsee
+2. **Konteksti** - Ymmärrät elementin sijainnin sivulla
+3. **Korjausohjeet** - Helpompi antaa tarkkoja korjausohjeita
+4. **Dokumentointi** - Visuaalinen todiste ongelmasta
+
+### Yleisimmät korjaukset
+
+
+**Tyhjät linkit**:
+
+```html
+<!-- Ongelma -->
+<a href="linkedin.com/profile" target="_blank"></a>
+
+<!-- Ratkaisu -->
+<a href="linkedin.com/profile" target="_blank" aria-label="LinkedIn-profiili">
+  <span>LinkedIn</span>
+</a>
+```
+
+
+**Kontrastivirheet**:
+
+```css
+/* Ongelma: teksti punaisella taustalla */
+.text { background: #ff0000; color: #ff9999; }
+
+/* Ratkaisu: riittävä kontrasti */
+.text { background: #ff0000; color: #ffffff; }
 ```
 
 ## ⚙️ Konfigurointi
@@ -330,7 +401,7 @@ MIT License - katso [LICENSE](LICENSE) tiedosto.
 
 ## 🐛 Bugit ja feature-pyynnöt
 
-Käytä [GitHub Issues](https://github.com/yourusername/saavutettavuusskanneri/issues) raportoidaksesi bugeja tai pyytääksesi uusia ominaisuuksia.
+Käytä [GitHub Issues](https://github.com/Kaaponen/a11y-python-monitor/issues) raportoidaksesi bugeja tai pyytääksesi uusia ominaisuuksia.
 
 ## 🏆 Kiitokset
 

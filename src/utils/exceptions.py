@@ -3,13 +3,13 @@
 
 class ScannerError(Exception):
     """Yleiset skannerin virheet"""
-    
+
     def __init__(self, message: str, cause: Exception = None, error_code: str = None):
         super().__init__(message)
         self.message = message
         self.cause = cause
         self.error_code = error_code
-    
+
     def __str__(self):
         if self.cause:
             return f"{self.message} (caused by: {self.cause})"
@@ -18,13 +18,13 @@ class ScannerError(Exception):
 
 class ReportError(Exception):
     """Raportin generoinnin virheet"""
-    
+
     def __init__(self, message: str, report_type: str = None, cause: Exception = None):
         super().__init__(message)
         self.message = message
         self.report_type = report_type
         self.cause = cause
-    
+
     def __str__(self):
         if self.report_type:
             return f"Report error ({self.report_type}): {self.message}"
@@ -33,12 +33,12 @@ class ReportError(Exception):
 
 class ValidationError(ScannerError):
     """Validoinnin virheet"""
-    
+
     def __init__(self, message: str, field: str = None, value: str = None):
         super().__init__(message)
         self.field = field
         self.value = value
-    
+
     def __str__(self):
         if self.field:
             return f"Validation error for '{self.field}': {self.message}"
@@ -47,12 +47,12 @@ class ValidationError(ScannerError):
 
 class NetworkError(ScannerError):
     """Verkkoliikenneen virheet"""
-    
+
     def __init__(self, message: str, url: str = None, status_code: int = None):
         super().__init__(message)
         self.url = url
         self.status_code = status_code
-    
+
     def __str__(self):
         parts = ["Network error"]
         if self.url:
@@ -65,12 +65,12 @@ class NetworkError(ScannerError):
 
 class BrowserError(ScannerError):
     """Selainauomaation virheet"""
-    
+
     def __init__(self, message: str, browser_type: str = None, page_url: str = None):
         super().__init__(message)
         self.browser_type = browser_type
         self.page_url = page_url
-    
+
     def __str__(self):
         parts = ["Browser error"]
         if self.browser_type:
@@ -83,13 +83,13 @@ class BrowserError(ScannerError):
 
 class ConfigurationError(Exception):
     """Konfiguraation virheet"""
-    
+
     def __init__(self, message: str, config_key: str = None, config_value: str = None):
         super().__init__(message)
         self.message = message
         self.config_key = config_key
         self.config_value = config_value
-    
+
     def __str__(self):
         if self.config_key:
             return f"Configuration error for '{self.config_key}': {self.message}"
@@ -98,12 +98,12 @@ class ConfigurationError(Exception):
 
 class AnalysisError(ScannerError):
     """Alt-teksti analyysin virheet"""
-    
+
     def __init__(self, message: str, image_url: str = None, api_error: str = None):
         super().__init__(message)
         self.image_url = image_url
         self.api_error = api_error
-    
+
     def __str__(self):
         parts = ["Analysis error"]
         if self.image_url:
@@ -116,12 +116,14 @@ class AnalysisError(ScannerError):
 
 class TimeoutError(ScannerError):
     """Aikakatkaisun virheet"""
-    
-    def __init__(self, message: str, timeout_seconds: int = None, operation: str = None):
+
+    def __init__(
+        self, message: str, timeout_seconds: int = None, operation: str = None
+    ):
         super().__init__(message)
         self.timeout_seconds = timeout_seconds
         self.operation = operation
-    
+
     def __str__(self):
         parts = ["Timeout error"]
         if self.operation:
@@ -134,13 +136,13 @@ class TimeoutError(ScannerError):
 
 class FileError(Exception):
     """Tiedosto-operaatioiden virheet"""
-    
+
     def __init__(self, message: str, file_path: str = None, operation: str = None):
         super().__init__(message)
         self.message = message
         self.file_path = file_path
         self.operation = operation
-    
+
     def __str__(self):
         parts = ["File error"]
         if self.operation:
@@ -153,12 +155,12 @@ class FileError(Exception):
 
 class SecurityError(ScannerError):
     """Turvallisuusvirheet"""
-    
+
     def __init__(self, message: str, error_type: str = None, source: str = None):
         super().__init__(message)
         self.error_type = error_type
         self.source = source
-    
+
     def __str__(self):
         parts = ["Security error"]
         if self.error_type:

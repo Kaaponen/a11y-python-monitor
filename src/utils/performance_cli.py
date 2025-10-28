@@ -24,7 +24,7 @@ def cache():
 
 
 @cache.command()
-@click.option('--key', help='Specific cache key to check')
+@click.option("--key", help="Specific cache key to check")
 async def status(key):
     """Show cache status and statistics"""
     try:
@@ -47,14 +47,14 @@ async def status(key):
             click.echo("=" * 40)
             for key, value in stats.items():
                 click.echo(f"{key}: {value}")
-                
+
     except Exception as e:
         click.echo(f"❌ Cache status check failed: {e}")
 
 
 @cache.command()
-@click.option('--pattern', default='*', help='Pattern to match (default: *)')
-@click.confirmation_option(prompt='Are you sure you want to clear cache?')
+@click.option("--pattern", default="*", help="Pattern to match (default: *)")
+@click.confirmation_option(prompt="Are you sure you want to clear cache?")
 async def clear(pattern):
     """Clear cache entries matching pattern"""
     try:
@@ -65,7 +65,7 @@ async def clear(pattern):
 
 
 @cache.command()
-@click.argument('key')
+@click.argument("key")
 async def delete(key):
     """Delete specific cache key"""
     try:
@@ -89,7 +89,7 @@ async def status():
     """Show rate limiting statistics"""
     try:
         stats = await api_rate_limiter.get_stats()
-        
+
         click.echo("🚦 Rate Limiting Statistics")
         click.echo("=" * 40)
         click.echo(f"Total requests: {stats['total_requests']}")
@@ -98,17 +98,17 @@ async def status():
         click.echo(f"Blocked clients: {stats['blocked_clients']}")
         click.echo(f"Burst blocks: {stats['burst_blocks']}")
         click.echo(f"Unique clients: {stats['unique_clients']}")
-        
-        if stats['total_requests'] > 0:
-            block_rate = (stats['blocked_requests'] / stats['total_requests']) * 100
+
+        if stats["total_requests"] > 0:
+            block_rate = (stats["blocked_requests"] / stats["total_requests"]) * 100
             click.echo(f"Block rate: {block_rate:.2f}%")
-            
+
     except Exception as e:
         click.echo(f"❌ Rate limit status check failed: {e}")
 
 
 @ratelimit.command()
-@click.argument('client_id')
+@click.argument("client_id")
 async def reset(client_id):
     """Reset rate limit for specific client"""
     try:
@@ -133,36 +133,42 @@ async def status():
     try:
         await connection_pool_manager.initialize()
         stats = await connection_pool_manager.get_pool_stats()
-        
+
         click.echo("🔗 Connection Pool Statistics")
         click.echo("=" * 40)
-        
-        global_stats = stats.get('global_stats', {})
+
+        global_stats = stats.get("global_stats", {})
         for key, value in global_stats.items():
             click.echo(f"{key}: {value}")
-        
+
         click.echo("\nPool Details:")
         click.echo("-" * 20)
-        
-        pools = stats.get('pools', {})
+
+        pools = stats.get("pools", {})
         for pool_name, pool_stats in pools.items():
             click.echo(f"\n{pool_name}:")
-            config = pool_stats.get('config', {})
+            config = pool_stats.get("config", {})
             click.echo(f"  Max connections: {config.get('max_connections', 'N/A')}")
-            click.echo(f"  Max per host: {config.get('max_connections_per_host', 'N/A')}")
+            click.echo(
+                f"  Max per host: {config.get('max_connections_per_host', 'N/A')}"
+            )
             click.echo(f"  Created at: {config.get('created_at', 'N/A')}")
-            
-            connector_stats = pool_stats.get('connector_stats', {})
+
+            connector_stats = pool_stats.get("connector_stats", {})
             if connector_stats:
-                click.echo(f"  Open connections: {connector_stats.get('open_connections', 0)}")
-                click.echo(f"  Acquired connections: {connector_stats.get('acquired_connections', 0)}")
-                
+                click.echo(
+                    f"  Open connections: {connector_stats.get('open_connections', 0)}"
+                )
+                click.echo(
+                    f"  Acquired connections: {connector_stats.get('acquired_connections', 0)}"
+                )
+
     except Exception as e:
         click.echo(f"❌ Connection pool status check failed: {e}")
 
 
 @connections.command()
-@click.argument('pool_name')
+@click.argument("pool_name")
 async def close_pool(pool_name):
     """Close specific connection pool"""
     try:
@@ -186,35 +192,35 @@ async def status():
     """Show memory usage and optimization statistics"""
     try:
         info = memory_optimizer.get_memory_info()
-        
+
         click.echo("💾 Memory Statistics")
         click.echo("=" * 40)
         click.echo(f"Current memory: {info['current_memory_mb']:.2f} MB")
         click.echo(f"Memory limit: {info['memory_limit_mb']:.2f} MB")
         click.echo(f"Usage: {info['usage_percent']:.1f}%")
-        
-        stats = info.get('stats', {})
+
+        stats = info.get("stats", {})
         click.echo(f"\nOptimization Stats:")
         click.echo(f"  Peak memory: {stats.get('peak_memory_mb', 0):.2f} MB")
         click.echo(f"  GC collections: {stats.get('gc_collections', 0)}")
         click.echo(f"  Cleanup operations: {stats.get('cleanup_operations', 0)}")
         click.echo(f"  Objects tracked: {stats.get('objects_tracked', 0)}")
-        
-        system_memory = info.get('system_memory', {})
+
+        system_memory = info.get("system_memory", {})
         if system_memory:
             click.echo(f"\nSystem Memory:")
             click.echo(f"  Total: {system_memory.get('total_mb', 0):.2f} MB")
             click.echo(f"  Available: {system_memory.get('available_mb', 0):.2f} MB")
             click.echo(f"  Used: {system_memory.get('percent_used', 0):.1f}%")
-        
-        recent_cleanups = info.get('recent_cleanups', [])
+
+        recent_cleanups = info.get("recent_cleanups", [])
         if recent_cleanups:
             click.echo(f"\nRecent Cleanups:")
             for cleanup in recent_cleanups[-3:]:
-                freed_mb = cleanup.get('freed_mb', 0)
-                cleanup_type = cleanup.get('type', 'unknown')
+                freed_mb = cleanup.get("freed_mb", 0)
+                cleanup_type = cleanup.get("type", "unknown")
                 click.echo(f"  {cleanup_type}: {freed_mb:.2f} MB freed")
-                
+
     except Exception as e:
         click.echo(f"❌ Memory status check failed: {e}")
 
@@ -255,7 +261,7 @@ async def overview():
     try:
         click.echo("🚀 Performance Overview")
         click.echo("=" * 50)
-        
+
         # Cache stats
         try:
             cache_stats = await cache_manager.get_stats()
@@ -265,7 +271,7 @@ async def overview():
             click.echo(f"  Total misses: {cache_stats.get('misses', 0)}")
         except Exception:
             click.echo(f"\n📦 Cache: Not available")
-        
+
         # Rate limit stats
         try:
             rate_stats = await api_rate_limiter.get_stats()
@@ -275,29 +281,33 @@ async def overview():
             click.echo(f"  Active clients: {rate_stats.get('active_clients', 0)}")
         except Exception:
             click.echo(f"\n🚦 Rate Limiting: Not available")
-        
+
         # Memory stats
         try:
             memory_info = memory_optimizer.get_memory_info()
             click.echo(f"\n💾 Memory:")
             click.echo(f"  Current usage: {memory_info['current_memory_mb']:.2f} MB")
             click.echo(f"  Usage percentage: {memory_info['usage_percent']:.1f}%")
-            click.echo(f"  GC collections: {memory_info['stats'].get('gc_collections', 0)}")
+            click.echo(
+                f"  GC collections: {memory_info['stats'].get('gc_collections', 0)}"
+            )
         except Exception:
             click.echo(f"\n💾 Memory: Not available")
-        
+
         # Connection pools
         try:
             await connection_pool_manager.initialize()
             pool_stats = await connection_pool_manager.get_pool_stats()
-            global_stats = pool_stats.get('global_stats', {})
+            global_stats = pool_stats.get("global_stats", {})
             click.echo(f"\n🔗 Connection Pools:")
             click.echo(f"  Total requests: {global_stats.get('total_requests', 0)}")
-            click.echo(f"  Active connections: {global_stats.get('active_connections', 0)}")
+            click.echo(
+                f"  Active connections: {global_stats.get('active_connections', 0)}"
+            )
             click.echo(f"  Reuse rate: {global_stats.get('reuse_rate', 0)}%")
         except Exception:
             click.echo(f"\n🔗 Connection Pools: Not available")
-            
+
     except Exception as e:
         click.echo(f"❌ Performance overview failed: {e}")
 
@@ -305,19 +315,26 @@ async def overview():
 # Async command wrapper
 def async_command(f):
     """Decorator to run async commands"""
+
     def wrapper(*args, **kwargs):
         return asyncio.run(f(*args, **kwargs))
+
     return wrapper
 
 
 # Apply async wrapper to all async commands
 for command in [
-    status, clear, delete, 
-    ratelimit.commands['status'], ratelimit.commands['reset'],
-    connections.commands['status'],
-    memory.commands['status'], memory.commands['cleanup'], 
-    memory.commands['start'], memory.commands['stop'],
-    overview
+    status,
+    clear,
+    delete,
+    ratelimit.commands["status"],
+    ratelimit.commands["reset"],
+    connections.commands["status"],
+    memory.commands["status"],
+    memory.commands["cleanup"],
+    memory.commands["start"],
+    memory.commands["stop"],
+    overview,
 ]:
-    if hasattr(command, 'callback'):
+    if hasattr(command, "callback"):
         command.callback = async_command(command.callback)

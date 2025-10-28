@@ -19,17 +19,22 @@ def get_alt_suggestion(image_url: str, openai_api_key: str) -> str:
         messages=[
             {
                 "role": "system",
-                "content": "You are an accessibility assistant. Describe images accurately as alt text."
+                "content": "You are an accessibility assistant. Describe images accurately as alt text.",
             },
             {
                 "role": "user",
                 "content": [
-                    {"type": "image_url", "image_url": {
-                        "url": f"data:image/jpeg;base64,{b64_image}"}},
-                    {"type": "text", "text": "What would be a good alt text for this image?"}
-                ]
-            }
-        ]
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"},
+                    },
+                    {
+                        "type": "text",
+                        "text": "What would be a good alt text for this image?",
+                    },
+                ],
+            },
+        ],
     )
 
     return response.choices[0].message.content.strip()
@@ -50,19 +55,23 @@ def run_alt_analysis(images: list[dict], openai_api_key: str) -> list[dict]:
         try:
             suggestion = get_alt_suggestion(img["src"], openai_api_key)
             evaluation = evaluate_alt(img.get("alt", ""), suggestion)
-            results.append({
-                "src": img["src"],
-                "alt_current": img.get("alt", ""),
-                "alt_suggested": suggestion,
-                "evaluation": evaluation
-            })
+            results.append(
+                {
+                    "src": img["src"],
+                    "alt_current": img.get("alt", ""),
+                    "alt_suggested": suggestion,
+                    "evaluation": evaluation,
+                }
+            )
         except Exception as e:
-            results.append({
-                "src": img["src"],
-                "alt_current": img.get("alt", ""),
-                "alt_suggested": f"[Virhe: {str(e)}]",
-                "evaluation": "⚠️ ei analysoitu"
-            })
+            results.append(
+                {
+                    "src": img["src"],
+                    "alt_current": img.get("alt", ""),
+                    "alt_suggested": f"[Virhe: {str(e)}]",
+                    "evaluation": "⚠️ ei analysoitu",
+                }
+            )
     return results
 
 
@@ -75,7 +84,7 @@ def save_analysis_to_json(results: list[dict], output_path: str = "alt_analysis.
 if __name__ == "__main__":
     example_images = [
         {"src": "https://example.com/image1.jpg", "alt": "vanha alt"},
-        {"src": "https://example.com/image2.jpg", "alt": ""}
+        {"src": "https://example.com/image2.jpg", "alt": ""},
     ]
     api_key = "YOUR_OPENAI_API_KEY"
     output = run_alt_analysis(example_images, api_key)
